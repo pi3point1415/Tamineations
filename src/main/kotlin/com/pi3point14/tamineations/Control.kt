@@ -30,11 +30,15 @@ fun spawnSquare(world: ServerWorld, center: Vec3d) {
     }
     SquareState.clear()
 
-    val positions = buildDancerPositions(center, gridSize)
+    val centerRound = Vec3d(round(center.x), round(center.y), round(center.z))
+
+    val positions = buildDancerPositions(centerRound, gridSize)
 
     for ((pos, yaw, name, robin) in positions) {
         spawnDancer(world, pos, yaw, name, robin)
     }
+
+    SquareState.center = centerRound
 }
 
 data class DancerSpawn(val pos: Vec3d, val yaw: Float, val name: String, val robin: Boolean)
@@ -43,25 +47,24 @@ fun buildDancerPositions(
     center: Vec3d,
     grid: Double,
 ): List<DancerSpawn> {
-    val centerRound = Vec3d(round(center.x), round(center.y), round(center.z))
     val smallDist = grid / 2
     val largeDist = grid * 3 / 2
     return listOf(
         // Couple 1
-        DancerSpawn(Vec3d(centerRound.x - smallDist, centerRound.y, centerRound.z + largeDist), 180f, "1L", false),
-        DancerSpawn(Vec3d(centerRound.x + smallDist, centerRound.y, centerRound.z + largeDist), 180f, "1R", true),
+        DancerSpawn(Vec3d(center.x - smallDist, center.y, center.z + largeDist), 180f, "1L", false),
+        DancerSpawn(Vec3d(center.x + smallDist, center.y, center.z + largeDist), 180f, "1R", true),
 
         // Couple 2
-        DancerSpawn(Vec3d(centerRound.x + largeDist, centerRound.y, centerRound.z + smallDist), 90f, "2L", true),
-        DancerSpawn(Vec3d(centerRound.x + largeDist, centerRound.y, centerRound.z - smallDist), 90f, "2R", false),
+        DancerSpawn(Vec3d(center.x + largeDist, center.y, center.z + smallDist), 90f, "2L", true),
+        DancerSpawn(Vec3d(center.x + largeDist, center.y, center.z - smallDist), 90f, "2R", false),
 
         // Couple 3
-        DancerSpawn(Vec3d(centerRound.x + smallDist, centerRound.y, centerRound.z - largeDist), 0f, "3L", false),
-        DancerSpawn(Vec3d(centerRound.x - smallDist, centerRound.y, centerRound.z - largeDist), 0f, "3R", true),
+        DancerSpawn(Vec3d(center.x + smallDist, center.y, center.z - largeDist), 0f, "3L", false),
+        DancerSpawn(Vec3d(center.x - smallDist, center.y, center.z - largeDist), 0f, "3R", true),
 
         // Couple 4
-        DancerSpawn(Vec3d(centerRound.x - largeDist, centerRound.y, centerRound.z - smallDist), 270f, "4L", false),
-        DancerSpawn(Vec3d(centerRound.x - largeDist, centerRound.y, centerRound.z + smallDist), 270f, "4R", true),
+        DancerSpawn(Vec3d(center.x - largeDist, center.y, center.z - smallDist), 270f, "4L", false),
+        DancerSpawn(Vec3d(center.x - largeDist, center.y, center.z + smallDist), 270f, "4R", true),
     )
 }
 
@@ -108,6 +111,7 @@ fun spawnDancer(world: ServerWorld, pos: Vec3d, yaw: Float, name: String, robin:
 
 object SquareState {
     val dancers = mutableMapOf<String, java.util.UUID>()
+    var center: Vec3d = Vec3d(0.0, 0.0, 0.0)
 
     fun clear() = dancers.clear()
 }
