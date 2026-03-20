@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "tamineations",
+  "version": "${version}",
+  "name": "Tamineations",
+  "description": "",
+  "authors": [],
+  "contact": {},
+  "license": "All-Rights-Reserved",
+  "icon": "assets/tamineations/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-datagen": [
+      "com.pi3point14.tamineations.client.TamineationsDataGenerator"
+    ],
+    "client": [
+      "com.pi3point14.tamineations.client.TamineationsClient"
+    ],
+    "main": [
+      "com.pi3point14.tamineations.Tamineations"
+    ]
+  },
+  "mixins": [
+    "tamineations.mixins.json",
+    {
+      "config": "tamineations.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
