@@ -5,6 +5,7 @@ import net.fabricmc.api.ModInitializer
 class Tamineations : ModInitializer {
 
     override fun onInitialize() {
-        SquareDanceCommands.register()
+        Commands.register()
+        Ticker.register()
     }
 }
