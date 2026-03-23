@@ -17,6 +17,14 @@ object Commands {
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             dispatcher.register(
                 literal("square")
+//                    .then(literal("test")
+//                        .executes { ctx ->
+//                            val formation = FormationManager.toFormation("static square") ?: return@executes 0
+//                            SquareState.setFormation(formation)
+//
+//                            return@executes 1
+//                        }
+//                    )
                     .then(literal("setup")
                         .executes { ctx -> setupSquare(ctx) }
                     )
@@ -132,6 +140,11 @@ object Commands {
 
         if (call == null) {
             source.sendFeedback({ Text.literal("Call \"$callName\" not found") }, false)
+            return 0
+        }
+
+        if (!call.isLegal()) {
+            source.sendFeedback({ Text.literal("Call \"$callName\" is not legal") }, false)
             return 0
         }
 

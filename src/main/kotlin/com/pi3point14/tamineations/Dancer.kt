@@ -11,37 +11,40 @@ import net.minecraft.item.Items
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
 import net.minecraft.util.math.Vec2f
+import net.minecraft.util.math.Vec3d
 
-class Dancer (world: ServerWorld, name: String) : HostileEntity(
-    if (name.first().uppercase() == "L") EntityType.ZOMBIE else EntityType.SKELETON, world) {
-    override fun damage(world: ServerWorld, source: DamageSource, amount: Float): Boolean {
-        return false
-    }
+class Dancer (world: ServerWorld, val lark: Boolean, val number: Int) : HostileEntity(
+    if (lark) EntityType.ZOMBIE else EntityType.SKELETON, world) {
+
+    val dancerId = "${if (lark) 'L' else 'R'}${number}"
 
     init {
-        this.setPosition(SquareState.center)
+        setPosition(SquareState.center)
 
-        this.isInvulnerable = true
-        this.isAiDisabled = true
-        this.isSilent = true
-        this.setPersistent()
+        isInvulnerable = true
+        isAiDisabled = true
+        isSilent = true
+        setPersistent()
 
         // Name tag visible overhead
-        this.customName = Text.literal(name)
-        this.isCustomNameVisible = true
+        customName = Text.literal(dancerId)
+        isCustomNameVisible = true
 
-        this.setCanPickUpLoot(false)
+        setCanPickUpLoot(false)
 
-        val coupleNum = name.last().toString()
-        val color = SquareState.coupleColors[coupleNum] ?: 0xFFFFFF
+        val color = SquareState.coupleColors[number] ?: 0xFFFFFF
 
         for ((slot, stack) in makeColoredArmor(color)) {
-            this.equipStack(slot, stack)
-            this.setEquipmentDropChance(slot, 0f)
+            equipStack(slot, stack)
+            setEquipmentDropChance(slot, 0f)
         }
 
         world.spawnEntity(this)
-        SquareState.dancers[name] = this
+        SquareState.dancers[dancerId] = this
+    }
+
+    override fun damage(world: ServerWorld, source: DamageSource, amount: Float): Boolean {
+        return false
     }
 
     val facingVec: Vec2f
@@ -67,13 +70,13 @@ class Dancer (world: ServerWorld, name: String) : HostileEntity(
 
     fun moveAbs(x: Float, z: Float, yaw: Float) {
         val xAbs = x + SquareState.center.x
-        val yAbs = this.y
+        val yAbs = y
         val zAbs =  z + SquareState.center.z
 
-        this.refreshPositionAndAngles(xAbs, yAbs, zAbs, yaw, 0f)
+        refreshPositionAndAngles(xAbs, yAbs, zAbs, yaw, 0f)
         this.yaw = yaw
-        this.headYaw = yaw
-        this.bodyYaw = yaw
+        bodyYaw = yaw
+        headYaw = yaw
     }
 
     fun moveRel(forward: Float, right: Float, turn: Float) {
@@ -93,10 +96,10 @@ class Dancer (world: ServerWorld, name: String) : HostileEntity(
         val z = end.y.toDouble()
         val yaw = yaw + turn
 
-        this.refreshPositionAndAngles(x, y, z, yaw, 0f)
+        refreshPositionAndAngles(x, y, z, yaw, 0f)
         this.yaw = yaw
-        this.headYaw = yaw
-        this.bodyYaw = yaw
+        headYaw = yaw
+        bodyYaw = yaw
     }
 
     private fun makeColoredArmor(color: Int): List<Pair<EquipmentSlot, ItemStack>> {
@@ -114,5 +117,9 @@ class Dancer (world: ServerWorld, name: String) : HostileEntity(
             EquipmentSlot.LEGS   to dye(Items.LEATHER_LEGGINGS),
             EquipmentSlot.FEET   to dye(Items.LEATHER_BOOTS),
         )
+    }
+
+    fun toDancerPosition () : DancerPosition {
+        return DancerPosition(Vec3d(xSquare, zSquare, yaw.toDouble()), number, lark)
     }
 }
