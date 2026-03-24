@@ -27,6 +27,9 @@ class UTurnBack(identifier: String?) : Call(identifier) {
 
     override fun end() {
         SquareState.setFormation(endFormation)
+
+        println("Static square: ${endFormation.matchesFormation("static square")}")
+        println("Eight chain: ${endFormation.matchesFormation("eight chain")}")
     }
 
     override fun callback(): String {

@@ -21,6 +21,7 @@ data class FormationDancer (
 data class FormationFormat(
     val name: String,
     val symmetric: Boolean,
+    val rotate: Boolean,
     val formations: List<List<FormationDancer>>
 )
 
@@ -53,11 +54,6 @@ object FormationManager {
                     )
                 )
             }
-        }
-
-        println(positions.size)
-        positions.forEach { position ->
-            println("\t${position.id}")
         }
 
         return Formation(positions)

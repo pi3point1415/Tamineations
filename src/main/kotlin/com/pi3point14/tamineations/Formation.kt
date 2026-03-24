@@ -3,6 +3,7 @@ package com.pi3point14.tamineations
 import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -146,5 +147,99 @@ open class Formation (val dancers : List<DancerPosition>) {
         } else {
             -90.0
         }
+    }
+
+    fun dancerAt(x : Double, y : Double) : DancerPosition? {
+        dancers.forEach { dancer ->
+            if (abs(dancer.vec.x - x) < epsilon && abs(dancer.vec.y - y)< epsilon) {
+                return dancer
+            }
+        }
+
+        return null
+    }
+
+    fun angleMatch(a1 : Double, a2 : Double) : Boolean {
+        var angle = (a1 - a2) % 360
+        if (angle > 180) angle -= 360
+
+        return abs(angle) < epsilon
+    }
+
+    fun isSymmetric() : Boolean {
+        for (dancer in dancers) {
+            val opposite = dancerAt(-dancer.vec.x, -dancer.vec.y) ?: return false
+
+            if (!angleMatch(dancer.vec.z, opposite.vec.z + 180)) return false
+
+            if (dancer.lark != opposite.lark) return false
+
+            if (abs(dancer.number - opposite.number) * 4 != dancers.size) return false
+        }
+
+        return true
+    }
+
+    fun matchesFormation(name : String) : Boolean {
+        val formation = FormationManager.formationDict[name] ?: return false
+
+        if (formation.symmetric && isSymmetric()) {
+            for (configuration in formation.formations) {
+                for (i in 1..(if (formation.rotate) 4 else 1)) {
+                    var matches = true
+                    for (dancer in configuration) {
+
+                        val x : Double
+                        val y : Double
+                        val angle : Double
+
+                        when (i) {
+                            2 -> {
+                                x = -dancer.y
+                                y = dancer.x
+                                angle = dancer.angle + 90
+                            }
+                            3 -> {
+                                x = -dancer.x
+                                y = -dancer.y
+                                angle = dancer.angle + 180
+                            }
+                            4 -> {
+                                x = dancer.y
+                                y = -dancer.x
+                                angle = dancer.angle
+                            }
+                            else -> {
+                                x = dancer.x
+                                y = dancer.y
+                                angle = dancer.angle
+                            }
+                        }
+
+                        val match = dancerAt(x, y)
+                        if (match == null) {
+                            matches = false
+                            break
+                        }
+                        if (!angleMatch(angle, match.vec.z)) {
+                            matches = false
+                            break
+                        }
+                        if (dancer.gender != Gender.ANY && dancer.gender == Gender.LARK != match.lark) {
+                            matches = false
+                            break
+                        }
+                        if (dancer.number != 0 && dancer.number != match.number) {
+                            matches = false
+                            break
+                        }
+                    }
+                    if (matches) return true
+                }
+            }
+            return false
+        }
+
+        return false
     }
 }

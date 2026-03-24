@@ -86,11 +86,6 @@ class Dancer (world: ServerWorld, val lark: Boolean, val number: Int) : HostileE
 
         val end = start.add(forward).add(right)
 
-        print("start: ${start.x}, ${start.y}")
-        print("forward: ${forward.x}, ${forward.y}")
-        print("right: ${right.x}, ${right.y}")
-        print("end: ${end.x}, ${end.y}")
-
         val x = end.x.toDouble()
         val y = y
         val z = end.y.toDouble()
