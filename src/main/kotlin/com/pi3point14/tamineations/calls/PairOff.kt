@@ -4,7 +4,7 @@ import com.pi3point14.tamineations.Call
 import com.pi3point14.tamineations.SquareState
 
 class PairOff(identifier: String?) : Call(identifier) {
-    override val length = 4f
+    override val length = 4.0
 
     var legal = false
 

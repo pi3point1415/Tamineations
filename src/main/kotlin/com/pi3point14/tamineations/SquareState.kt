@@ -39,7 +39,7 @@ object SquareState {
         dancers.clear()
     }
 
-    fun moveDancer(dancer: String, x: Float, z: Float, yaw: Float): Int {
+    fun moveDancer(dancer: String, x: Double, z: Double, yaw: Double): Int {
         val entity = dancers[dancer.uppercase()] ?: return 0
 
         entity.moveAbs(x, z, yaw)
@@ -47,7 +47,7 @@ object SquareState {
         return 1
     }
 
-    fun moveDancerRel(dancer: String, forward: Float, right: Float, turn: Float): Int {
+    fun moveDancerRel(dancer: String, forward: Double, right: Double, turn: Double): Int {
         val entity = dancers[dancer.uppercase()] ?: return 0
 
         entity.moveRel(forward, right, turn)
@@ -56,11 +56,11 @@ object SquareState {
     }
 
     fun moveDancer(dancer: String, pos: Vec3d) {
-        moveDancer(dancer, pos.x.toFloat(), pos.y.toFloat(), pos.z.toFloat())
+        moveDancer(dancer, pos.x, pos.y, pos.z)
     }
 
     fun moveDancerRel(dancer: String, pos: Vec3d) {
-        moveDancerRel(dancer, pos.x.toFloat(), pos.y.toFloat(), pos.z.toFloat())
+        moveDancerRel(dancer, pos.x, pos.y, pos.z)
     }
 
     fun goHome() {
