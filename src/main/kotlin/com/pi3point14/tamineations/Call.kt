@@ -9,7 +9,7 @@ abstract class Call (identifier: String?) {
 
     var tick = 0
 
-    abstract val length: Float
+    abstract val length: Double
 
     val startFormation : Formation = SquareState.getFormation()
 

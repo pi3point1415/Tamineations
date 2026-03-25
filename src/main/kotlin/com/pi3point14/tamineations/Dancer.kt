@@ -10,7 +10,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.server.world.ServerWorld
 import net.minecraft.text.Text
-import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
 
 class Dancer (world: ServerWorld, val lark: Boolean, val number: Int) : HostileEntity(
@@ -47,15 +46,16 @@ class Dancer (world: ServerWorld, val lark: Boolean, val number: Int) : HostileE
         return false
     }
 
-    val facingVec: Vec2f
+    val facingVec: Vec2d
         get() {
             val facing3D = this.getRotationVec(1.0F)
-            return Vec2f(facing3D.x.toFloat(), facing3D.z.toFloat()).normalize()
+
+            return Vec2d(facing3D.x, facing3D.z).normalize()
         }
 
-    val rightVec: Vec2f
+    val rightVec: Vec2d
         get() {
-            return Vec2f(-facingVec.y, facingVec.x)
+            return Vec2d(-facingVec.y, facingVec.x)
         }
 
     val xSquare: Double
@@ -68,33 +68,33 @@ class Dancer (world: ServerWorld, val lark: Boolean, val number: Int) : HostileE
             return z - SquareState.center.z
         }
 
-    fun moveAbs(x: Float, z: Float, yaw: Float) {
+    fun moveAbs(x: Double, z: Double, yaw: Double) {
         val xAbs = x + SquareState.center.x
         val yAbs = y
         val zAbs =  z + SquareState.center.z
 
-        refreshPositionAndAngles(xAbs, yAbs, zAbs, yaw, 0f)
-        this.yaw = yaw
-        bodyYaw = yaw
-        headYaw = yaw
+        refreshPositionAndAngles(xAbs, yAbs, zAbs, yaw.toFloat(), 0f)
+        this.yaw = yaw.toFloat()
+        bodyYaw = yaw.toFloat()
+        headYaw = yaw.toFloat()
     }
 
-    fun moveRel(forward: Float, right: Float, turn: Float) {
-        val start = Vec2f(x.toFloat(), z.toFloat())
+    fun moveRel(forward: Double, right: Double, turn: Double) {
+        val start = Vec2d(x, z)
         val forward = facingVec.multiply(forward)
         val right = rightVec.multiply(right)
 
         val end = start.add(forward).add(right)
 
-        val x = end.x.toDouble()
+        val x = end.x
         val y = y
-        val z = end.y.toDouble()
+        val z = end.y
         val yaw = yaw + turn
 
-        refreshPositionAndAngles(x, y, z, yaw, 0f)
-        this.yaw = yaw
-        headYaw = yaw
-        bodyYaw = yaw
+        refreshPositionAndAngles(x, y, z, yaw.toFloat(), 0f)
+        this.yaw = yaw.toFloat()
+        headYaw = yaw.toFloat()
+        bodyYaw = yaw.toFloat()
     }
 
     private fun makeColoredArmor(color: Int): List<Pair<EquipmentSlot, ItemStack>> {

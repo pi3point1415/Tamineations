@@ -1,6 +1,5 @@
 package com.pi3point14.tamineations
 
-import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
 import kotlin.math.PI
 import kotlin.math.abs
@@ -23,7 +22,7 @@ data class DancerPosition (var vec : Vec3d, val number: Int, val lark: Boolean) 
     }
 
     fun moveForward(forward: Double) {
-        val facing = facingVec.multiply(forward.toFloat())
+        val facing = facingVec.multiply(forward)
         val move = Vec3d(facing.x.toDouble(), facing.y.toDouble(), 0.0)
         vec = vec.add(move)
     }
@@ -32,34 +31,27 @@ data class DancerPosition (var vec : Vec3d, val number: Int, val lark: Boolean) 
         this.vec = vec
     }
 
-    val facingVec : Vec2f
+    val facingVec : Vec2d
         get () {
-            return Vec2f(-sin(vec.z * PI / 180).toFloat(), cos(vec.z * PI / 180).toFloat())
+            return Vec2d(-sin(vec.z * PI / 180), cos(vec.z * PI / 180))
         }
 
-    val rightVec: Vec2f
+    val rightVec: Vec2d
         get() {
-            return Vec2f(-facingVec.y, facingVec.x)
+            return Vec2d(-facingVec.y, facingVec.x)
         }
 
-    val leftVec: Vec2f
+    val leftVec: Vec2d
         get() {
-            return Vec2f(facingVec.y, -facingVec.x)
+            return Vec2d(facingVec.y, -facingVec.x)
         }
 }
 
 open class Formation (val dancers : List<DancerPosition>) {
 
-    val epsilon = 1e-6
+    val dancerDict = dancers.associateBy { it.id }
 
-    fun getById(id : String) : DancerPosition? {
-        for (dancer in dancers) {
-            if (dancer.id == id) {
-                return dancer
-            }
-        }
-        return null
-    }
+    val epsilon = 1e-6
 
     fun dancerAtLocation(vec : Vec3d) : DancerPosition? {
         for (dancer in dancers) {
@@ -115,7 +107,7 @@ open class Formation (val dancers : List<DancerPosition>) {
     fun copyFrom(subFormation: Formation) {
         subFormation.dancers.forEach { dancer ->
             val id = dancer.id
-            getById(id)?.moveAbs(dancer.vec)
+            dancerDict[id]?.moveAbs(dancer.vec)
         }
     }
 
@@ -124,7 +116,7 @@ open class Formation (val dancers : List<DancerPosition>) {
         val dancersLerp : MutableList<DancerPosition> = mutableListOf()
 
         dancers.forEach { pos ->
-            dancersLerp.add(pos.lerp(other.getById(pos.id), fraction))
+            dancersLerp.add(pos.lerp(other.dancerDict[pos.id], fraction))
         }
 
         return Formation(dancersLerp)
@@ -137,9 +129,9 @@ open class Formation (val dancers : List<DancerPosition>) {
     }
 
     fun outTurn(id : String) : Double {
-        val dancer = getById(id) ?: return 0.0
+        val dancer = dancerDict[id] ?: return 0.0
         val right = dancer.rightVec
-        val diff = Vec2f(dancer.vec.x.toFloat(), dancer.vec.y.toFloat())
+        val diff = Vec2d(dancer.vec.x, dancer.vec.y)
         val dot = diff.dot(right)
 
         return if (dot > 0) {
