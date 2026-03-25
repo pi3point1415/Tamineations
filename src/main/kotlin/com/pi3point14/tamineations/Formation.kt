@@ -23,7 +23,7 @@ data class DancerPosition (var vec : Vec3d, val number: Int, val lark: Boolean) 
 
     fun moveForward(forward: Double) {
         val facing = facingVec.multiply(forward)
-        val move = Vec3d(facing.x.toDouble(), facing.y.toDouble(), 0.0)
+        val move = Vec3d(facing.x, facing.y, 0.0)
         vec = vec.add(move)
     }
 

@@ -4,7 +4,7 @@ import com.pi3point14.tamineations.Call
 import com.pi3point14.tamineations.SquareState
 
 class UTurnBack(identifier: String?) : Call(identifier) {
-    override val length = 2f
+    override val length = 2.0
 
     init {
         activeEndFormation.dancers.forEach { dancer ->
