@@ -21,6 +21,7 @@ class Formation (var type: FormationType, val children: MutableList<Formation>, 
     constructor (number: Int?) : this(FormationType.DANCER, mutableListOf(), number)
     constructor (type: FormationType, children: MutableList<Formation>) : this(type, children, null)
     constructor (type: FormationType, vararg children: Formation) : this(type, children.toMutableList())
+    constructor (type: FormationType, vararg children: Int) : this(type, children.map { Formation(it) }.toMutableList())
 
     fun flatten() {
         if (type == FormationType.EMPTY) return
@@ -38,7 +39,7 @@ class Formation (var type: FormationType, val children: MutableList<Formation>, 
 
     fun toCoordinates () : FormationCoordinates {
         when (type) {
-            FormationType.EMPTY -> return FormationCoordinates(listOf(), 1, 1)
+            FormationType.EMPTY -> return FormationCoordinates(listOf(Coordinate(0.0, 0.0, 0)), 1, 1)
             FormationType.DANCER -> return FormationCoordinates(listOf(
                 Coordinate(0.0, 0.0, number ?: 0)), 1, 1
             )
@@ -117,5 +118,37 @@ class Formation (var type: FormationType, val children: MutableList<Formation>, 
         val ybb = reducedCoords.maxOf { it.y }
 
         return IntFormationCoordinates(reducedCoords, xbb, ybb)
+    }
+
+    private fun optionalCombinations(lists: List<List<Formation>>): List<List<Formation>> {
+        if (lists.isEmpty()) return listOf(emptyList())
+
+        val rest = optionalCombinations(lists.drop(1))
+
+        return rest.map { listOf(Formation()) + it } + lists.first().flatMap { element ->
+            rest.map { combo -> listOf(element) + combo }
+        }
+    }
+
+    fun getSubsets() : List<Formation> {
+        when (type) {
+            FormationType.EMPTY -> return listOf(Formation())
+            FormationType.DANCER -> return listOf(Formation(number))
+            FormationType.ROW, FormationType.COLUMN -> {
+                val subsets = children.map { it.getSubsets() }
+                val combinations = optionalCombinations(subsets)
+                return combinations.map {
+                    if (it.isEmpty()) {
+                        Formation()
+                    }
+                    else if (it.size == 1) {
+                        Formation(it[0].number)
+                    }
+                    else {
+                        Formation(type, it.toMutableList())
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,7 +1,11 @@
-import FormationType.ROW as ROW
-import FormationType.COLUMN as COLUMN
+import FormationType.*
 
 fun printFormation (formation : Formation) {
+    if (formation.type == EMPTY) {
+        println("")
+        return
+    }
+
     val intCoords = formation.toIntCoordinates().dancers
 
     val minX = intCoords.minOf { it.x }
@@ -19,7 +23,7 @@ fun printFormation (formation : Formation) {
     for (y in minY..maxY) {
         val row = (minX..maxX).joinToString("") { x ->
             val point = points[x]?.get(y)
-            if (point != null) "${point.number} " else "  "
+            if (point != null) "${if (point.number == 0) "." else point.number} " else "  "
         }
         println(row)
     }
@@ -91,20 +95,39 @@ fun main() {
 
     // H
 
-    val d1 = Formation(1)
-    val d2 = Formation(2)
-    val d3 = Formation(3)
-    val d4 = Formation(4)
-    val d5 = Formation(5)
-    val d6 = Formation(6)
-    val d7 = Formation(7)
-    val d8 = Formation(8)
+//    val d1 = Formation(1)
+//    val d2 = Formation(2)
+//    val d3 = Formation(3)
+//    val d4 = Formation(4)
+//    val d5 = Formation(5)
+//    val d6 = Formation(6)
+//    val d7 = Formation(7)
+//    val d8 = Formation(8)
+//
+//    val h1 = Formation(ROW, d1, Formation(), Formation(), d2)
+//    val h2 = Formation(ROW, d3, d4, d8, d7)
+//    val h3 = Formation(ROW, d6, Formation(), Formation(), d5)
+//
+//    val formation = Formation(COLUMN, h1, h2, h3)
+//
+//    printFormation(formation)
 
-    val h1 = Formation(ROW, d1, Formation(), Formation(), d2)
-    val h2 = Formation(ROW, d3, d4, d8, d7)
-    val h3 = Formation(ROW, d6, Formation(), Formation(), d5)
 
-    val formation = Formation(COLUMN, h1, h2, h3)
+    // Box
 
+    val h1 = Formation(ROW, 1, 2)
+    val h2 = Formation(ROW, 3, 4)
+
+    val formation = Formation(COLUMN, h1, h2)
+
+    println("===============")
     printFormation(formation)
+    println("===============\n\n")
+
+    val subFormations = formation.getSubsets()
+    subFormations.forEach {
+        println("===============")
+        printFormation(it)
+        println("===============\n")
+    }
 }
