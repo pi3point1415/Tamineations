@@ -1,9 +1,7 @@
-enum class Facing {
-    N,
-    E,
-    S,
-    W,
-}
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 enum class Gender {
     BOY,
@@ -15,26 +13,157 @@ enum class Side {
     SIDE,
 }
 
-open class Position(val x: Int, val y: Int, val facing: Facing?, val gender: Gender?, val side: Side?, val number: Int?) {
+open class Position (
+    val pos : Vector,
+    val facing: Double? = null,
+    val gender: Gender? = null,
+    val side: Side? = null,
+    val number: Int? = null
+) {
+    constructor (
+        x : Double,
+        y : Double,
+        facing: Double? = null,
+        gender: Gender? = null,
+        side: Side? = null,
+        number: Int? = null
+    ) : this(Vector(x, y), facing, gender, side, number)
+
+    constructor (
+        pos : Vector,
+        facing: Int? = null,
+        gender: Gender? = null,
+        side: Side? = null,
+        number: Int? = null
+    ) : this(pos, facing?.toDouble(), gender, side, number)
+
+    constructor (
+        x : Int,
+        y : Int,
+        facing: Int? = null,
+        gender: Gender? = null,
+        side: Side? = null,
+        number: Int? = null
+    ) : this(Vector(x.toDouble(), y.toDouble()), facing?.toDouble(), gender, side, number)
+
+    companion object {
+        const val EPSILON = 1e-6
+
+        fun angleEqual(a : Double, b : Double) : Boolean {
+            val diff = (a - b + 180).mod(360.0) - 180.0
+            return abs(diff) < EPSILON
+        }
+    }
+
+    val x : Double
+        get() = pos.x
+
+    val y : Double
+        get() = pos.y
+
     override fun toString(): String {
         return "($x, $y)"
     }
+
+    fun move(dir : Vector) : Position {
+        return Position(
+            pos + dir,
+            facing,
+            gender,
+            side,
+            number,
+        )
+    }
+
+    fun rotateAngle(angle : Double) : Position {
+        val newFacing = if (facing != null) (facing + angle).mod(360.0) else null
+        return Position(
+            x,
+            y,
+            newFacing,
+            gender,
+            side,
+            number
+        )
+    }
+
+    fun rotateRight() : Position {
+        return rotateAngle(90.0)
+    }
+
+    fun rotateLeft() : Position {
+        return rotateAngle(-90.0)
+    }
+
+    val facingVec : Vector
+        get() {
+            if (facing == null) {
+                return Vector(0.0, 0.0)
+            }
+            val angleRad = facing * PI / 180
+            return Vector(sin(angleRad), cos(angleRad))
+        }
 }
 
-class AbstractPosition(x : Int, y : Int) : Position(x, y, null, null, null, null)
+open class Formation (open val positions: List<Position>) {
+    companion object {
+        val StaticSquare = Formation(
+            listOf(
+                Position(-0.5, -1.5, 0.0, Gender.BOY, Side.HEAD, 1),
+                Position(0.5, -1.5, 0.0, Gender.GIRL, Side.HEAD, 1),
+                Position(1.5, -0.5, 270.0, Gender.BOY, Side.SIDE, 2),
+                Position(1.5, 0.5, 270.0, Gender.GIRL, Side.SIDE, 2),
+                Position(0.5, 1.5, 180.0, Gender.BOY, Side.HEAD, 3),
+                Position(-0.5, 1.5, 180.0, Gender.GIRL, Side.HEAD, 3),
+                Position(-1.5, 0.5, 90.0, Gender.BOY, Side.SIDE, 4),
+                Position(-1.5, -0.5, 90.0, Gender.GIRL, Side.SIDE, 4),
+            )
+        )
 
-open class AbstractFormation (open val positions: List<Position>) {
-    val facingSymbol = mapOf(
-        Facing.N to "^",
-        Facing.E to ">",
-        Facing.S to "V",
-        Facing.W to "<",
-        null to '.'
-    )
+        val Box = Formation(
+            listOf(
+                Position(-0.5, -0.5),
+                Position(0.5, -0.5),
+                Position(-0.5, 0.5),
+                Position(0.5, 0.5),
+            )
+        )
 
-    fun dancerAt(x: Int, y: Int) : Position? {
+        val Couple = Formation(
+            listOf(
+                Position(-0.5, 0.0, 0.0),
+                Position(0.5, 0.0, 0.0),
+            )
+        )
+    }
+
+    fun rotate(angle : Double) : Formation {
+        val newPositions = positions.map {
+            val pos = it.pos.minus(center).rotate(angle).plus(center)
+            Position(
+                pos,
+                it.facing?.plus(angle),
+                it.gender,
+                it.side,
+                it.number
+            )
+        }
+
+        return Formation(newPositions)
+    }
+
+    fun getDancer(number: Int?, gender: Gender?) : Position? {
         for (pos in positions) {
-            if (pos.x == x && pos.y == y) {
+            if (pos.number == number && pos.gender == gender) {
+                return pos
+            }
+        }
+        return null
+    }
+
+    fun dancerAt(x: Double, y: Double) : Position? {
+        for (pos in positions) {
+            if (abs(pos.x - x) < Position.EPSILON && abs(pos.y - y) < Position.EPSILON) {
                 return pos
             }
         }
@@ -42,45 +171,63 @@ open class AbstractFormation (open val positions: List<Position>) {
         return null
     }
 
-    fun grid(): List<MutableList<Position?>> {
-        val minX = positions.minBy { it.x }.x
-        val minY = positions.minBy { it.y }.y
-        val maxX = positions.maxBy { it.x }.x
-        val maxY = positions.maxBy { it.y }.y
-
-        val coords = List(maxY - minY + 1) { y -> MutableList(maxX - minX + 1) { x -> dancerAt(x + minX, y + minY) } }
-
-        return coords
+    fun dancerAt(pos: Vector) : Position? {
+        return dancerAt(pos.x, pos.y)
     }
 
-    override fun toString (): String {
-        val grid = grid()
+    val center : Vector
+        get () {
+            val minX = positions.minBy { it.x }.x
+            val minY = positions.minBy { it.y }.y
+            val maxX = positions.maxBy { it.x }.x
+            val maxY = positions.maxBy { it.y }.y
 
-        val lines = grid.map { line -> line.map{ pos -> if (pos != null) 'x' else '.' }.joinToString(separator = " ") }
-        return lines.joinToString("\n")
+            return Vector((minX + maxX) / 2.0, (minY + maxY) / 2.0)
+        }
+
+    fun isBeau(pos: Position) : Boolean {
+        val diff = center - pos.pos
+        return pos.facingVec.cross(diff) < 0
     }
 
-    fun subFormations(formation: AbstractFormation): List<AbstractFormation> {
-        val formations = mutableListOf<AbstractFormation>()
+    val beaus : List<Position> get() {
+        val beau = positions.map { isBeau(it) }
+        return positions.zip(beau).filter { it.second }.map { it.first }
+    }
 
-        for (base in positions) {
-            val offsetX = base.x - formation.positions[0].x
-            val offsetY = base.y - formation.positions[0].y
+    val belles : List<Position> get() {
+        val belle = positions.map { !isBeau(it) }
+        return positions.zip(belle).filter { it.second }.map { it.first }
+    }
 
-            val matches = mutableListOf(base)
+    fun subFormations(reference: Formation): List<Formation> {
+        val formations = mutableListOf<Formation>()
 
-            for (pos in formation.positions.subList(1, formation.positions.size)) {
-                val match = dancerAt(pos.x + offsetX, pos.y + offsetY)
-                if (match != null) {
-                    matches.add(match)
+        for (angle in 0..<360 step 45) {
+            val rotated = reference.rotate(angle.toDouble())
+            for (base in positions) {
+                val offsetX = base.x - rotated.positions[0].x
+                val offsetY = base.y - rotated.positions[0].y
+
+                val matches = mutableListOf(base)
+
+                for (pos in rotated.positions.subList(1, rotated.positions.size)) {
+                    val match = dancerAt(pos.x + offsetX, pos.y + offsetY)
+                    if (match != null) {
+                        if ((pos.facing != null && match.facing != null) &&
+                            !Position.angleEqual(pos.facing, match.facing)) break
+                        if (pos.gender != match.gender && (pos.gender != null && match.gender != null)) break
+                        if (pos.side != match.side && (pos.side != null && match.side != null)) break
+                        if (pos.number != match.number && (pos.number != null && match.number != null)) break
+                        matches.add(match)
+                    } else {
+                        break
+                    }
                 }
-                else {
-                    break
-                }
-            }
 
-            if (matches.size == formation.positions.size) {
-                formations.add(AbstractFormation(matches))
+                if (matches.size == rotated.positions.size) {
+                    formations.add(Formation(matches))
+                }
             }
         }
 
@@ -97,7 +244,7 @@ open class AbstractFormation (open val positions: List<Position>) {
         return true
     }
 
-    fun disjointSubFormations(formation: AbstractFormation): List<AbstractFormation> {
+    fun disjointSubFormations(formation: Formation): List<Formation> {
         val formations = subFormations(formation)
         val sets = formations.map { it.positions.toSet() }
 
@@ -118,19 +265,19 @@ open class AbstractFormation (open val positions: List<Position>) {
             }
         }
 
-        return bestSubset.map { AbstractFormation(it.toList()) }
+        return bestSubset.map { Formation(it.toList()) }
     }
 
-    fun toFormation(): Formation {
-        return Formation(positions)
-    }
-}
-
-class Formation (positions: List<Position>) : AbstractFormation(positions) {
-    override fun toString (): String {
-        val grid = grid()
-
-        val lines = grid.map { line -> line.map{ pos -> if (pos != null) facingSymbol[pos.facing] else '.' }.joinToString(separator = " ") }
-        return lines.joinToString("\n")
+    fun filterBy(modifiers : List<Modifier>) : Formation {
+        var newPositions = positions
+        for (modifier in modifiers) {
+            newPositions = when (modifier) {
+                Modifier.HEADS -> newPositions.filter { it.side == Side.HEAD }
+                Modifier.SIDES -> newPositions.filter { it.side == Side.SIDE }
+                Modifier.BOYS -> newPositions.filter { it.gender == Gender.BOY }
+                Modifier.GIRLS -> newPositions.filter { it.gender == Gender.GIRL }
+            }
+        }
+        return Formation(newPositions)
     }
 }
