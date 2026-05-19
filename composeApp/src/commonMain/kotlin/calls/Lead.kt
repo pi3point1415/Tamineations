@@ -6,7 +6,7 @@ import BaseCall
 import Modifier
 import Position
 
-class Lead (val dir : Direction, val modifiers : List<Modifier>) : BaseCall() {
+class Lead (val dir : Direction, val modifiers : List<Modifier> = listOf()) : BaseCall() {
     override fun compute(start: Formation): List<Formation> {
 
         if (dir != Direction.RIGHT && dir != Direction.LEFT) return listOf()

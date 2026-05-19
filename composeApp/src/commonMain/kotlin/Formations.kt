@@ -13,12 +13,24 @@ enum class Side {
     SIDE,
 }
 
-open class Position (
+enum class Center {
+    CENTER,
+    END,
+}
+
+enum class Beau {
+    BEAU,
+    BELLE,
+}
+
+data class Position (
     val pos : Vector,
     val facing: Double? = null,
     val gender: Gender? = null,
     val side: Side? = null,
-    val number: Int? = null
+    val number: Int? = null,
+    val center: Center? = null,
+    val beau: Beau? = null,
 ) {
     constructor (
         x : Double,
@@ -26,25 +38,10 @@ open class Position (
         facing: Double? = null,
         gender: Gender? = null,
         side: Side? = null,
-        number: Int? = null
-    ) : this(Vector(x, y), facing, gender, side, number)
-
-    constructor (
-        pos : Vector,
-        facing: Int? = null,
-        gender: Gender? = null,
-        side: Side? = null,
-        number: Int? = null
-    ) : this(pos, facing?.toDouble(), gender, side, number)
-
-    constructor (
-        x : Int,
-        y : Int,
-        facing: Int? = null,
-        gender: Gender? = null,
-        side: Side? = null,
-        number: Int? = null
-    ) : this(Vector(x.toDouble(), y.toDouble()), facing?.toDouble(), gender, side, number)
+        number: Int? = null,
+        center: Center? = null,
+        beau: Beau? = null,
+    ) : this(Vector(x, y), facing, gender, side, number, center, beau)
 
     companion object {
         const val EPSILON = 1e-6
@@ -72,6 +69,8 @@ open class Position (
             gender,
             side,
             number,
+            center,
+            beau,
         )
     }
 
@@ -83,7 +82,9 @@ open class Position (
             newFacing,
             gender,
             side,
-            number
+            number,
+            center,
+            beau,
         )
     }
 
@@ -105,7 +106,7 @@ open class Position (
         }
 }
 
-open class Formation (open val positions: List<Position>) {
+class Formation (val positions: List<Position>) {
     companion object {
         val StaticSquare = Formation(
             listOf(
@@ -120,19 +121,30 @@ open class Formation (open val positions: List<Position>) {
             )
         )
 
-        val Box = Formation(
+        val Couple = Formation(
             listOf(
-                Position(-0.5, -0.5),
-                Position(0.5, -0.5),
-                Position(-0.5, 0.5),
-                Position(0.5, 0.5),
+                Position(-0.5, 0.0, 0.0, beau=Beau.BEAU),
+                Position(0.5, 0.0, 0.0, beau=Beau.BELLE),
             )
         )
 
-        val Couple = Formation(
+        val Facing = Formation(
             listOf(
-                Position(-0.5, 0.0, 0.0),
-                Position(0.5, 0.0, 0.0),
+                Position(0.0, -0.5, 0.0),
+                Position(0.0, 0.5, 180.0)
+            )
+        )
+
+        val TradeBy = Formation(
+            listOf(
+                Position(-0.5, -1.5, 180.0, center = Center.END, beau = Beau.BELLE),
+                Position(0.5, -1.5, 180.0, center = Center.END, beau = Beau.BEAU),
+                Position(-0.5, -0.5, 0.0, center = Center.CENTER, beau = Beau.BEAU),
+                Position(0.5, -0.5, 0.0, center = Center.CENTER, beau = Beau.BELLE),
+                Position(-0.5, 0.5, 180.0, center = Center.CENTER, beau = Beau.BELLE),
+                Position(0.5, 0.5, 180.0, center = Center.CENTER, beau = Beau.BEAU),
+                Position(-0.5, 1.5, 0.0, center = Center.END, beau = Beau.BEAU),
+                Position(0.5, 1.5, 0.0, center = Center.END, beau = Beau.BELLE),
             )
         )
     }
@@ -145,7 +157,9 @@ open class Formation (open val positions: List<Position>) {
                 it.facing?.plus(angle),
                 it.gender,
                 it.side,
-                it.number
+                it.number,
+                it.center,
+                it.beau,
             )
         }
 
@@ -171,10 +185,6 @@ open class Formation (open val positions: List<Position>) {
         return null
     }
 
-    fun dancerAt(pos: Vector) : Position? {
-        return dancerAt(pos.x, pos.y)
-    }
-
     val center : Vector
         get () {
             val minX = positions.minBy { it.x }.x
@@ -185,19 +195,20 @@ open class Formation (open val positions: List<Position>) {
             return Vector((minX + maxX) / 2.0, (minY + maxY) / 2.0)
         }
 
-    fun isBeau(pos: Position) : Boolean {
-        val diff = center - pos.pos
-        return pos.facingVec.cross(diff) < 0
-    }
-
     val beaus : List<Position> get() {
-        val beau = positions.map { isBeau(it) }
-        return positions.zip(beau).filter { it.second }.map { it.first }
+        return positions.filter{ it.beau == Beau.BEAU }
     }
 
     val belles : List<Position> get() {
-        val belle = positions.map { !isBeau(it) }
-        return positions.zip(belle).filter { it.second }.map { it.first }
+        return positions.filter{ it.beau == Beau.BELLE }
+    }
+
+    val centers : List<Position> get() {
+        return positions.filter{ it.center == Center.CENTER }
+    }
+
+    val ends : List<Position> get() {
+        return positions.filter{ it.center == Center.END }
     }
 
     fun subFormations(reference: Formation): List<Formation> {
@@ -209,7 +220,14 @@ open class Formation (open val positions: List<Position>) {
                 val offsetX = base.x - rotated.positions[0].x
                 val offsetY = base.y - rotated.positions[0].y
 
-                val matches = mutableListOf(base)
+                val matches = mutableListOf(Position(
+                    base.pos,
+                    base.facing,
+                    base.gender,
+                    base.side,
+                    base.number,
+                    rotated.positions[0].center,
+                    rotated.positions[0].beau))
 
                 for (pos in rotated.positions.subList(1, rotated.positions.size)) {
                     val match = dancerAt(pos.x + offsetX, pos.y + offsetY)
@@ -219,7 +237,15 @@ open class Formation (open val positions: List<Position>) {
                         if (pos.gender != match.gender && (pos.gender != null && match.gender != null)) break
                         if (pos.side != match.side && (pos.side != null && match.side != null)) break
                         if (pos.number != match.number && (pos.number != null && match.number != null)) break
-                        matches.add(match)
+                        matches.add(Position(
+                            match.pos,
+                            match.facing,
+                            match.gender,
+                            match.side,
+                            match.number,
+                            pos.center,
+                            pos.beau,
+                        ))
                     } else {
                         break
                     }
@@ -246,6 +272,15 @@ open class Formation (open val positions: List<Position>) {
 
     fun disjointSubFormations(formation: Formation): List<Formation> {
         val formations = subFormations(formation)
+
+        println("\n\nNew set:")
+        for (sub in formations) {
+            println("Formation")
+            for (pos in sub.positions) {
+                println("\t$pos: ${pos.facing}, ${pos.beau}")
+            }
+        }
+
         val sets = formations.map { it.positions.toSet() }
 
         val n = sets.size

@@ -4,8 +4,8 @@ object Sequencer {
     val calls = listOf(
         Start(Modifier.SIDES),
         Lead(Direction.RIGHT, listOf(Modifier.SIDES)),
-        Lead(Direction.LEFT, listOf()),
-        Trade(listOf()),
+        PassThru(),
+        TradeBy(),
     )
     var index = 0
 

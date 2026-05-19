@@ -1,7 +1,6 @@
 package com.pi3point14.tamineations
 
 import Formation
-import Position
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
@@ -22,9 +21,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 
@@ -173,15 +170,6 @@ fun App() {
 
     fun move(formation: Formation) {
         moveChannel.trySend(formation)
-
-//        dancers.forEach {
-//            dancer ->
-//            val end = Square.getDancer(dancer.number, dancer.gender) ?: return
-//
-//            scope.launch {
-//                dancer.animateTo(end)
-//            }
-//        }
     }
 
     Square.clearMoveCallbacks()

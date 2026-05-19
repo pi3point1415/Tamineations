@@ -5,7 +5,7 @@ import BaseCall
 import Modifier
 import Position
 
-class PressAhead (val modifiers : List<Modifier>): BaseCall() {
+class PressAhead (val modifiers : List<Modifier> = listOf()): BaseCall() {
 
     override fun compute(start: Formation) : List<Formation> {
         // Todo: handle crashing

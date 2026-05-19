@@ -3,7 +3,6 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class Vector (val x : Double, val y : Double) {
-    constructor (x : Int, y : Int) : this(x.toDouble(), y.toDouble())
     fun rotateLeft () : Vector {
         return Vector(-y, x)
     }
@@ -30,13 +29,5 @@ class Vector (val x : Double, val y : Double) {
 
     operator fun div(scalar : Double) : Vector {
         return Vector(x / scalar, y / scalar)
-    }
-
-    fun dot(other : Vector) : Double {
-        return x * other.x + y * other.y
-    }
-
-    fun cross(other : Vector) : Double {
-        return x * other.y - y * other.x
     }
 }

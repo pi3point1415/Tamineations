@@ -5,8 +5,10 @@ import BaseCall
 import Modifier
 import Position
 
-class Trade (val modifiers : List<Modifier>) : BaseCall() {
+class Trade (val modifiers : List<Modifier> = listOf()) : BaseCall() {
     override fun compute(start: Formation): List<Formation> {
+        //TODO: make more general
+
         val (subs, inactive) = filterFormation(start, Formation.Couple, modifiers) ?: return listOf()
 
         val newPositions = List(2) { mutableListOf<Position>() }
