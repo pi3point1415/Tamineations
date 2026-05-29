@@ -1,8 +1,8 @@
 object Square {
-    var formation = Formation.StaticSquare
+    var formation = FormationList.StaticSquare
 
     fun reset() {
-        moveTo(Formation.StaticSquare)
+        moveTo(FormationList.StaticSquare)
     }
 
     val callbacks = mutableListOf<(Formation) -> Unit>()

@@ -11,7 +11,7 @@ class Lead (val dir : Direction, val modifiers : List<Modifier> = listOf()) : Ba
 
         if (dir != Direction.RIGHT && dir != Direction.LEFT) return listOf()
 
-        val (subs, inactive) = filterFormation(start, Formation.Couple, modifiers) ?: return listOf()
+        val (subs, inactive) = filterFormation(start, FormationList.Couple, modifiers) ?: return listOf()
 
         val newPositions = List(2) { mutableListOf<Position>() }
 

@@ -13,7 +13,7 @@ enum class Direction {
 abstract class BaseCall {
     abstract fun compute(start: Formation) : List<Formation>
 
-    fun filterFormation(formation: Formation, filter: Formation, modifiers: List<Modifier>): Pair<List<Formation>, List<Position>>? {
+    fun filterFormation(formation: Formation, filter: List<Formation>, modifiers: List<Modifier>): Pair<List<Formation>, List<Position>>? {
         val active = formation.filterBy(modifiers)
 
         val subs = active.disjointSubFormations(filter)
@@ -28,5 +28,9 @@ abstract class BaseCall {
         val inactive = formation.positions.filter { !active.positions.contains(it) }
 
         return Pair(subs, inactive)
+    }
+
+    fun filterFormation(formation: Formation, filter: Formation, modifiers: List<Modifier>): Pair<List<Formation>, List<Position>>? {
+        return filterFormation(formation, listOf(filter), modifiers)
     }
 }

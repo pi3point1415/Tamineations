@@ -8,7 +8,7 @@ import Position
 class PassThru (val modifiers : List<Modifier> = listOf()) : BaseCall() {
     override fun compute(start: Formation): List<Formation> {
         // Todo: ocean wave rule
-        val (subs, inactive) = filterFormation(start, Formation.Facing, modifiers) ?: return listOf()
+        val (subs, inactive) = filterFormation(start, FormationList.Facing, modifiers) ?: return listOf()
 
         val newPositions = List(2) { mutableListOf<Position>() }
 

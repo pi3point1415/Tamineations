@@ -1,15 +1,21 @@
 import calls.*
 
 object Sequencer {
+//    val calls = listOf(
+//        Start(Modifier.SIDES),
+//        Lead(Direction.RIGHT, listOf(Modifier.SIDES)),
+//        PassThru(),
+//        TradeBy(),
+//        TouchAQuarter(),
+//        Trade(),
+//        UTurnBack(),
+//        Trade(),
+//    )
     val calls = listOf(
         Start(Modifier.SIDES),
         Lead(Direction.RIGHT, listOf(Modifier.SIDES)),
-        PassThru(),
-        TradeBy(),
         TouchAQuarter(),
-        Trade(),
-        UTurnBack(),
-        Trade(),
+        Hinge(),
     )
     var index = 0
 

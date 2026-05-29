@@ -8,7 +8,7 @@ import Position
 class TradeBy (val modifiers : List<Modifier> = listOf()) : BaseCall() {
     override fun compute(start: Formation): List<Formation> {
         // Todo: 3/4 tag
-        val (subs, inactive) = filterFormation(start, Formation.TradeBy, modifiers) ?: return listOf()
+        val (subs, inactive) = filterFormation(start, FormationList.TradeBy, modifiers) ?: return listOf()
 
         val newPositions = List(2) { mutableListOf<Position>() }
 
